@@ -32,7 +32,7 @@ from sklearn.metrics import accuracy_score
 
 # Define a function to read movie review text data into dataframe.
 
-# In[2]:
+# In[3]:
 
 
 def read_data():
@@ -51,8 +51,7 @@ def read_data():
         fo=open(f,encoding="utf8")
         review_neg.append(fo.readlines()[0])
         fo.close()
-    train_data = pd.concat([pd.DataFrame({"review":review_pos, "label":1, "file":flist_pos}),\
-                            pd.DataFrame({"review":review_neg, "label":0, "file":flist_neg})], ignore_index=True).sample(frac=1, random_state=1)
+    train_data = pd.concat([pd.DataFrame({"review":review_pos, "label":1, "file":flist_pos}),        pd.DataFrame({"review":review_neg, "label":0, "file":flist_neg})], ignore_index=True).sample(frac=1, random_state=1)
 
     flist_pos = [datadir + "/test/pos/" + e for e in os.listdir(datadir + "test/pos/") if e.endswith(".txt")]
     flist_neg = [datadir + "/test/neg/" + e for e in os.listdir(datadir + "test/neg/") if e.endswith(".txt")]
@@ -68,28 +67,27 @@ def read_data():
         fo=open(f,encoding="utf8")
         review_neg.append(fo.readlines()[0])
         fo.close()
-    test_data = pd.concat([pd.DataFrame({"review":review_pos, "label":1, "file":flist_pos}),\
-                           pd.DataFrame({"review":review_neg, "label":0, "file":flist_neg})], ignore_index=True).sample(frac=1, random_state=1)
+    test_data = pd.concat([pd.DataFrame({"review":review_pos, "label":1, "file":flist_pos}),        pd.DataFrame({"review":review_neg, "label":0, "file":flist_neg})], ignore_index=True).sample(frac=1, random_state=1)
 
     return train_data,test_data
 
 
-# In[3]:
+# In[4]:
 
 
 train_data,test_data=read_data() #read train and test data into dataframe. Positive reviews are marked as 1, and negative 0.
 
 
-# In[4]:
+# In[5]:
 
 
 print(Counter(train_data['label']))
 train_data.head()
 
 
-# The training data is balanced since there are 12500 cases of negative reviews and 12500 cases of positive reviews. Therefore, we can use accuracy to measure the model's performance. 
+# The training data is balanced since there are 12500 cases of negative reviews and 12500 cases of positive reviews. Therefore, we can use accuracy to evaluate the model's performance. 
 
-# In[5]:
+# In[6]:
 
 
 print('Positive review: '+train_data['review'].iloc[1]+'\n')
@@ -98,7 +96,7 @@ print('Negative review: '+train_data['review'].iloc[0]) #check two examples of p
 
 # Remove HTML codes, replace special characters with space, conver to lower case
 
-# In[6]:
+# In[7]:
 
 
 train_data['review'] = train_data['review'].apply(lambda r: BeautifulSoup(r, 'html.parser').get_text())
@@ -108,19 +106,18 @@ train_data['review'] = train_data['review'].str.lower()  #convert to lower case
 
 #  Remove stopwords, duplicate words and grouping together the different forms of a word.
 
-# In[7]:
+# In[8]:
 
 
 lemmatizer = WordNetLemmatizer()
 nltk.download('stopwords')
-estopwords = set(stopwords.words('english')).union(["thats","weve","dont","lets","youre","im","thi","ha", \
-                "wa","st","ask","want","like","thank","know","susan","ryan","say","got","ought","ive","theyre"])  #get the English stop words
+estopwords = set(stopwords.words('english')).union(["thats","weve","dont","lets","youre","im","thi","ha",    "wa","st","ask","want","like","thank","know","susan","ryan","say","got","ought","ive","theyre"])  #get the English stop words
 train_data['review'] = train_data['review'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in set(x.split()) if word not in estopwords]))
 
 
 # Tokenize the words and pad the tokens with fixed length.
 
-# In[8]:
+# In[10]:
 
 
 MAX_VOCABS = 5000
@@ -134,7 +131,7 @@ x_train = pad_sequences(x_train, padding='post', maxlen=MAX_LEN, value=vocab_siz
 
 # Split train data into train data and validation data. 
 
-# In[9]:
+# In[11]:
 
 
 y_train=np.array(train_data['label'])
@@ -143,19 +140,18 @@ x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size = 
 
 # Train the model with embedd_dim=16.
 
-# In[10]:
+# In[12]:
 
 
 embedd_dim = 16
-model = keras.Sequential([keras.layers.Embedding(vocab_size + 1, embedd_dim), keras.layers.GlobalAveragePooling1D(),\
-                          keras.layers.Dense(16, activation='relu'), keras.layers.Dense(1, activation='sigmoid')])
+model = keras.Sequential([keras.layers.Embedding(vocab_size + 1, embedd_dim), keras.layers.GlobalAveragePooling1D(),                          keras.layers.Dense(16, activation='relu'), keras.layers.Dense(1, activation='sigmoid')])
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
 history = model.fit(x_train, y_train, epochs=75,  batch_size=512, verbose = 2, validation_data = (x_val, y_val))
 
 
 # Use the test data to test the performance of the data. 
 
-# In[11]:
+# In[15]:
 
 
 test_data['review'] = test_data['review'].apply(lambda r: BeautifulSoup(r, 'html.parser').get_text())
@@ -173,12 +169,11 @@ df_test_label=pd.DataFrame({"test_label_true":list(y_test), "test_label_predict"
 df_test_label.to_csv('test_label_true_predict.csv',index=True)
 
 
-# In[12]:
+# In[16]:
 
 
 embedd_dim = 32
-model32 = keras.Sequential([keras.layers.Embedding(vocab_size + 1, embedd_dim), keras.layers.GlobalAveragePooling1D(),\
-                            keras.layers.Dense(32, activation='relu'), keras.layers.Dense(1, activation='sigmoid')])
+model32 = keras.Sequential([keras.layers.Embedding(vocab_size + 1, embedd_dim), keras.layers.GlobalAveragePooling1D(),                          keras.layers.Dense(32, activation='relu'), keras.layers.Dense(1, activation='sigmoid')])
 
 model32.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
 history = model32.fit(x_train, y_train, epochs=75,  batch_size=512, verbose = 2, validation_data = (x_val, y_val))
@@ -186,19 +181,25 @@ y_test_predict_prob=model32.predict(x_test)
 y_test_predict=[1 if e >=0.5 else 0 for e in y_test_predict_prob]
 
 
-# In[13]:
+# In[17]:
 
 
 print('accuracy score for test data with embedd_dim=32 is ',accuracy_score(y_test_predict,y_test))
 
 
+# In[33]:
+
+
+history.history.keys()
+
+
 # It seems that when embedd_dim=16 is used, the model performance is better. 
 
-# In[14]:
+# In[25]:
 
 
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
 plt.title('Model accuracy')
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
